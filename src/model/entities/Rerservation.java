@@ -4,17 +4,22 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import model.exceptions.DomainException;
+
 public class Rerservation {
 
 	private Integer roomNumber;
-	private Date checkIN;
+	private Date checkIn;
 	private Date checkOut;
-	
+
 	private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-	public Rerservation(Integer roomNumber, Date checkIN, Date checkOut) {
+	public Rerservation(Integer roomNumber, Date checkIn, Date checkOut) {
+		if (!checkOut.after(checkIn)) {
+			throw new DomainException("Check_out date must after check-in date");
+		}
 		this.roomNumber = roomNumber;
-		this.checkIN = checkIN;
+		this.checkIn = checkIn;
 		this.checkOut = checkOut;
 	}
 
@@ -26,8 +31,8 @@ public class Rerservation {
 		this.roomNumber = roomNumber;
 	}
 
-	public Date getCheckIN() {
-		return checkIN;
+	public Date getCheckIn() {
+		return checkIn;
 	}
 
 	public Date getCheckOut() {
@@ -35,35 +40,27 @@ public class Rerservation {
 	}
 
 	public long duration() {
-		long diff = checkOut.getTime() - checkIN.getTime();
-	return	TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+		long diff = checkOut.getTime() - checkIn.getTime();
+		return TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
 	}
 
-	public String updateDates(Date checkIn, Date checkOut) {
-		
+	public void updateDates(Date checkIn, Date checkOut) {
 		Date now = new Date();
 		if (checkIn.before(now) || checkOut.before(now)) {
-			return " Reservation dates for update must be future";
-		}  if (!checkOut.after(checkIn)) {
-			return "Check_out date must after check-in date";
+			throw new DomainException(" Reservation dates for update must be future");
 		}
-		this.checkIN = checkIN;
+		if (!checkOut.after(checkIn)) {
+			throw new DomainException("Check_out date must after check-in date");
+		}
+		this.checkIn = checkIn;
 		this.checkOut = checkOut;
-		return null;
-		
+
 	}
-	
+
 	@Override
 	public String toString() {
-		return "Room "
-			+roomNumber
-			+", check-in: "
-			+sdf.format(checkIN)
-			+", check-out: "
-			+ sdf.format(checkOut)			
-			+", "
-			+duration()
-			+"nights";
-				
+		return "Room " + roomNumber + ", check-in: " + sdf.format(checkIn) + ", check-out: " + sdf.format(checkOut)
+				+ ", " + duration() + " nights";
+
 	}
 }
